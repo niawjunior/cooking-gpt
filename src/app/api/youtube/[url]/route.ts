@@ -32,14 +32,6 @@ export async function GET(
         }
       })
     })
-
-    const result = {
-      title: title,
-      name: info.videoDetails?.title,
-      videoPath: videoPath,
-      id: url,
-    }
-    console.log(result)
     return NextResponse.json({
       title: title,
       name: info.videoDetails.title,

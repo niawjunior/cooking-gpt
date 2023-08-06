@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { useCallback, useEffect, useState } from "react"
 import { ReloadIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons"
 import { Skeleton } from "@/components/ui/skeleton"
+import axios from "axios"
 
 import {
   Select,
@@ -37,6 +38,7 @@ export default function Home() {
   const [language, setLanguage] = useState<any>("th")
   const [isYoutube, setIsYoutube] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
+  const [youtubeLists, setYoutubeLists] = useState<string[]>([])
   const [summarizeLoading, setSummarizeLoading] = useState<boolean>(false)
 
   const [summarizeDetail, setSummarizeDetail] = useState<any>(null)
@@ -85,6 +87,7 @@ export default function Home() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     setLoading(true)
+    setYoutubeLists([])
     event.preventDefault()
     setIsYoutube(isValidYouTubeUrl(url))
     if (isValidYouTubeUrl(url)) {
@@ -105,10 +108,18 @@ export default function Home() {
       setSummarizeLoading(true)
       const summarizeResponse = await HowToCook(url)
       const summarizeData = await summarizeResponse.json()
+
       setSummarizeDetail(JSON.parse(summarizeData.summarize))
       setLoading(false)
       setSummarizeLoading(false)
-      console.log(JSON.parse(summarizeData.summarize))
+
+      const searchYouTuberRsponse = await fetch(`/api/related/${url}`)
+      const searchYouTuberResult = await searchYouTuberRsponse.json()
+
+      const mapVideoIds = searchYouTuberResult.videos.map((item: string) => {
+        return extractYouTubeVideoId(item)
+      })
+      setYoutubeLists(mapVideoIds)
     }
   }
 
@@ -118,7 +129,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-700 flex flex-col justify-start items-center py-10">
-      <div className="font-bold text-3xl text-white mb-6">ครัว.GPT</div>
+      <div className="font-bold text-3xl text-white mb-6">Cooking.GPT</div>
       <form
         onSubmit={(e) => handleSubmit(e)}
         className="w-1/2 flex justify-center"
@@ -128,7 +139,7 @@ export default function Home() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             type="text"
-            placeholder="กรุณาพิมพ์ ลิงค์วีดีโอ หรือ เมนูอาหาร ที่ต้องการจะทำ"
+            placeholder="Please search with a YouTube link or a cooking menu."
           />
           <Select
             onValueChange={(e) => handleOnChange(e)}
@@ -139,8 +150,8 @@ export default function Home() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="th">ไทย</SelectItem>
-                <SelectItem value="en">อังกฤษ</SelectItem>
+                <SelectItem value="th">Thai</SelectItem>
+                <SelectItem value="en">English</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -149,19 +160,19 @@ export default function Home() {
             className="bg-blue-500 w-30 hover:bg-blue-700"
             type="submit"
           >
-            ค้นหา
+            Search
             {loading && <ReloadIcon className="ml-2 h-4 w-4 animate-spin" />}
             {!loading && <MagnifyingGlassIcon className="ml-2 h-4 w-4" />}
           </Button>
         </div>
       </form>
-      <div className="container flex justify-around mt-6">
+      <div className="container flex justify-around mt-6 gap-4">
         {isYoutube && (
           <div className="w-1/2">
             {detail && (
               <>
                 <div className="text-white font-bold">
-                  รายละเอียด: {detail?.name}
+                  Title: {detail?.name}
                 </div>
                 <iframe
                   className="mt-4"
@@ -179,6 +190,7 @@ export default function Home() {
         <div className="w-1/2">
           {summarizeLoading && (
             <>
+              <div className="text-white">Loading...</div>
               <div className="flex items-center space-x-4 mt-4">
                 <div className="space-y-2 w-full">
                   <Skeleton className="h-4 w-full" />
@@ -189,27 +201,62 @@ export default function Home() {
           )}
           {summarizeDetail && !summarizeLoading && (
             <>
-              <div className="text-white font-bold flex">สรุป</div>
-              <div className="p-4 rounded-md text-white">
-                <div>ชื่อเมนู {summarizeDetail?.title}</div>
-                <ul className="list-disc mt-4">
-                  {summarizeDetail?.steps.map((item: string, index: number) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-                <div>{summarizeDetail?.conclusion}</div>
+              <div className="text-white text-2xl font-bold flex">
+                Summarize
               </div>
-              <div className="text-white font-bold flex">สิ่งที่ต้องไปซื้อ</div>
-              <ul className="list-disc mt-4 text-white">
-                {summarizeDetail?.ingredients.map(
-                  (item: string, index: number) => (
-                    <li key={index}>{item}</li>
-                  )
-                )}
-              </ul>
+              <div className="flex w-full justify-around">
+                <div className="p-4 text-white">
+                  <div className="text-white font-bold text-lg">
+                    Menu {summarizeDetail?.title}
+                  </div>
+
+                  <ul className="list-disc">
+                    {summarizeDetail?.steps.map(
+                      (item: string, index: number) => (
+                        <li key={index}>{item}</li>
+                      )
+                    )}
+                  </ul>
+                  <div>{summarizeDetail?.conclusion}</div>
+                </div>
+
+                <div className="text-white mt-4 text-lg">
+                  <div className="text-white font-bold flex text-lg">
+                    Ingredients
+                  </div>
+                  <ul className="list-disc mt-4 text-white">
+                    {summarizeDetail?.ingredients.map(
+                      (item: string, index: number) => (
+                        <li key={index}>{item}</li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              </div>
             </>
           )}
         </div>
+        {youtubeLists.length > 0 && (
+          <div className="w-1/2">
+            <div className="text-white text-2xl font-bold flex">
+              Related Videos
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {youtubeLists.map((item, index) => (
+                <iframe
+                  key={index}
+                  className="mt-4"
+                  width="auto"
+                  height="auto"
+                  src={`https://www.youtube.com/embed/${item}`}
+                  title={item}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
