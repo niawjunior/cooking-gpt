@@ -3,6 +3,11 @@
 ![alt text](demo-1.png)
 ![alt text](demo-2.png)
 
+
+https://github.com/niawjunior/cooking-gpt/assets/17493195/853aab4f-7144-4115-9346-66468344dbb2
+
+
+
 Key Features:
 
 - YouTube Video Input: The web application allows users to input a YouTube video URL into a designated textbox. Users can simply copy and paste the URL of the video they want to summarize.
