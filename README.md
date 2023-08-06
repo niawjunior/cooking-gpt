@@ -1,3 +1,22 @@
+# Cooking with ChatGPT
+
+![alt text](demo-1.png)
+![alt text](demo-2.png)
+
+Key Features:
+
+- YouTube Video Input: The web application allows users to input a YouTube video URL into a designated textbox. Users can simply copy and paste the URL of the video they want to summarize.
+
+- YouTube Video to MP3 Conversion: Upon submitting the YouTube URL, the application automatically extracts the audio from the video and converts it into an MP3 file. This ensures that the content can be efficiently processed for further analysis.
+
+- Transcription to Text: The MP3 file is then sent to a transcription service powered by OpenAI's Whisper API. This service converts the audio into text, producing an accurate transcript of the video content.
+
+- Summarization using ChatGPT: The obtained text transcription is further processed using OpenAI's powerful language model, ChatGPT. Utilizing ChatGPT's natural language processing capabilities, the application generates a concise and informative summary of the video content.
+
+- Step-by-Step Cooking Instructions: For culinary-related videos, the application provides an additional feature to summarize cooking instructions as a step-by-step guide or in bullet points. Users can easily follow the summarized cooking steps for their favorite recipes.
+
+- User-Friendly Interface: The user interface is designed to be intuitive and user-friendly, enabling effortless navigation and interaction. The application provides clear instructions and feedback to guide users through the process of summarizing their desired YouTube videos.
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
