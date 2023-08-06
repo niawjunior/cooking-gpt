@@ -5,9 +5,7 @@ export async function POST(request: NextRequest) {
   const data = await request.json()
 
   const videoPath = data.videoPath
-  console.log(videoPath)
   try {
-    // Now, transcribe the MP3 to text using the Whisper API
     const transcribeResponse = await axios.post(
       "https://api.openai.com/v1/audio/transcriptions",
       {
@@ -16,7 +14,7 @@ export async function POST(request: NextRequest) {
       },
       {
         headers: {
-          Authorization: "Bearer ",
+          Authorization: `Bearer ${process.env.CHAT_GPT_API_KEY}`,
           "Content-Type": "multipart/form-data",
         },
       }

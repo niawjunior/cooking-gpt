@@ -25,52 +25,91 @@ function extractYouTubeVideoId(url: string) {
   return null
 }
 
+function isValidYouTubeUrl(url: string) {
+  const youtubeUrlPattern =
+    /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/
+  return youtubeUrlPattern.test(url)
+}
+
 export default function Home() {
   const [url, setUrl] = useState("")
   const [detail, setDetail] = useState<any>(null)
   const [language, setLanguage] = useState<any>("th")
+  const [isYoutube, setIsYoutube] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [summarizeLoading, setSummarizeLoading] = useState<boolean>(false)
 
   const [summarizeDetail, setSummarizeDetail] = useState<any>(null)
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    setLoading(true)
-    event.preventDefault()
-    const youtubeId = extractYouTubeVideoId(url)
-    const response = await fetch(`/api/youtube/${youtubeId}`)
-    const result = await response.json()
-    setDetail(result)
-    setLoading(false)
-
-    setSummarizeLoading(true)
+  const Transcribe = async (videoPath: string) => {
     const chatGPTResponse = await fetch(`/api/transcribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        videoPath: result.videoPath,
+        videoPath: videoPath,
       }),
     })
-
-    const chatGPTData = await chatGPTResponse.json()
-
+    return chatGPTResponse
+  }
+  const Summarize = async (transcription: string) => {
     const summarizeResponse = await fetch(`/api/chatgpt`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: chatGPTData.transcription,
+        text: transcription,
+        isYoutube: true,
         language: language,
       }),
     })
+    return summarizeResponse
+  }
 
-    const summarizeData = await summarizeResponse.json()
-    console.log(JSON.parse(summarizeData.summarize))
-    setSummarizeDetail(JSON.parse(summarizeData.summarize))
-    setSummarizeLoading(false)
+  const HowToCook = async (menu: string) => {
+    const summarizeResponse = await fetch(`/api/chatgpt`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: menu,
+        isYoutube: false,
+        language: language,
+      }),
+    })
+    return summarizeResponse
+  }
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    setLoading(true)
+    event.preventDefault()
+    setIsYoutube(isValidYouTubeUrl(url))
+    if (isValidYouTubeUrl(url)) {
+      const youtubeId = extractYouTubeVideoId(url)
+      const response = await fetch(`/api/youtube/${youtubeId}`)
+      const result = await response.json()
+      setDetail(result)
+      setLoading(false)
+      setSummarizeLoading(true)
+
+      const chatGPTResponse = await Transcribe(result.videoPath)
+      const chatGPTData = await chatGPTResponse.json()
+      const summarizeResponse = await Summarize(chatGPTData.transcription)
+      const summarizeData = await summarizeResponse.json()
+      setSummarizeDetail(JSON.parse(summarizeData.summarize))
+      setSummarizeLoading(false)
+    } else {
+      setSummarizeLoading(true)
+      const summarizeResponse = await HowToCook(url)
+      const summarizeData = await summarizeResponse.json()
+      setSummarizeDetail(JSON.parse(summarizeData.summarize))
+      setLoading(false)
+      setSummarizeLoading(false)
+      console.log(JSON.parse(summarizeData.summarize))
+    }
   }
 
   const handleOnChange = (e: any) => {
@@ -89,7 +128,7 @@ export default function Home() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             type="text"
-            placeholder="ลิงค์วีดีโอ"
+            placeholder="กรุณาพิมพ์ ลิงค์วีดีโอ หรือ เมนูอาหาร ที่ต้องการจะทำ"
           />
           <Select
             onValueChange={(e) => handleOnChange(e)}
@@ -117,44 +156,58 @@ export default function Home() {
         </div>
       </form>
       <div className="container flex justify-around mt-6">
+        {isYoutube && (
+          <div className="w-1/2">
+            {detail && (
+              <>
+                <div className="text-white font-bold">
+                  รายละเอียด: {detail?.name}
+                </div>
+                <iframe
+                  className="mt-4"
+                  width="600"
+                  height="400"
+                  src={`https://www.youtube.com/embed/${detail?.id}`}
+                  title={detail?.name}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              </>
+            )}
+          </div>
+        )}
         <div className="w-1/2">
-          {detail && (
+          {summarizeLoading && (
             <>
-              <div className="text-white font-bold">
-                รายละเอียด: {detail?.name}
+              <div className="flex items-center space-x-4 mt-4">
+                <div className="space-y-2 w-full">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
               </div>
-              <iframe
-                className="mt-4"
-                width="600"
-                height="400"
-                src={`https://www.youtube.com/embed/${detail?.id}`}
-                title={detail?.name}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              ></iframe>
             </>
           )}
-        </div>
-        <div className="w-1/2">
-          {detail && <div className="text-white font-bold flex">สรุป</div>}
-          {summarizeLoading && (
-            <div className="flex items-center space-x-4 mt-4">
-              <div className="space-y-2 w-full">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            </div>
-          )}
           {summarizeDetail && !summarizeLoading && (
-            <div className="mt-4 p-4 rounded-md text-white">
-              <div>{summarizeDetail?.title}</div>
-              <ul className="list-disc mt-4">
-                {summarizeDetail?.steps.map((item: string, index: number) => (
-                  <li key={index}>{item}</li>
-                ))}
+            <>
+              <div className="text-white font-bold flex">สรุป</div>
+              <div className="p-4 rounded-md text-white">
+                <div>ชื่อเมนู {summarizeDetail?.title}</div>
+                <ul className="list-disc mt-4">
+                  {summarizeDetail?.steps.map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+                <div>{summarizeDetail?.conclusion}</div>
+              </div>
+              <div className="text-white font-bold flex">สิ่งที่ต้องไปซื้อ</div>
+              <ul className="list-disc mt-4 text-white">
+                {summarizeDetail?.ingredients.map(
+                  (item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  )
+                )}
               </ul>
-              <div>{summarizeDetail?.conclusion}</div>
-            </div>
+            </>
           )}
         </div>
       </div>
