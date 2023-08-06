@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 export async function GET(
   request: NextRequest,
-  context: { params: { keywords: string } }
+  context: { params: { keywords: string; language: string } }
 ) {
   const keywords = context?.params?.keywords
+  const regionCode = context?.params?.language
   try {
     const SEARCH_API_URL = "https://www.googleapis.com/youtube/v3/search"
     const MAX_RESULTS = "6"
@@ -14,7 +15,9 @@ export async function GET(
       q: keywords,
       maxResults: MAX_RESULTS,
       videoEmbeddable: "true",
+      regionCode: regionCode === "en" ? "US" : "TH",
     })
+    console.log(params)
 
     const response = await fetch(`${SEARCH_API_URL}?${params.toString()}`)
     const data = await response.json()

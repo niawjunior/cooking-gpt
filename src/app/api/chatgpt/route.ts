@@ -13,11 +13,11 @@ export async function POST(request: NextRequest) {
     let promptTh = ""
     let promptEn = ""
     if (data.isYoutube) {
-      promptTh = `โปรดช่วยสรุป คำแนะนำในการทำอาหาร ต่อไปนี้เป็นคำแนะนำ ทีละขั้นตอนแบบละเอียด หรือ เป็นหัวข้อย่อย เพื่อง่ายต่อการทำตาม และ สิ่งที่ต้องไปซื้อ ให้คำตอบเป็น json format {title: "", steps: [], ingredients, conclusion: ""} เพื่อนำไปใช้งานต่อได้ง่าย:\n\n${data.text}`
-      promptEn = `Please summarize the following cooking instructions as a step-by-step guide or in bullet points for easy follow and which ingredient I have to buy and pls answer with json format {title: "", steps: [], ingredients, conclusion: ""} for easy to use it further:\n\n${data.text}`
+      promptTh = `โปรดช่วยสรุป คำแนะนำในการทำอาหาร ต่อไปนี้เป็นคำแนะนำ ทีละขั้นตอนแบบละเอียด หรือ เป็นหัวข้อย่อย เพื่อง่ายต่อการทำตาม และ สิ่งที่ต้องไปซื้อ ให้คำตอบเป็น json format {title: "", steps: [], ingredients, conclusion: ""} เพื่อนำไปใช้งานต่อได้ง่าย (ไม่เกิน 4000 คำ):\n\n${data.text}`
+      promptEn = `Please summarize the following cooking instructions as a step-by-step guide or in bullet points for easy follow and which ingredient I have to buy and pls answer with json format {title: "", steps: [], ingredients, conclusion: ""} for easy to use it further (not more than 4,000 words):\n\n${data.text}`
     } else {
-      promptTh = `โปรดช่วยให้ คำแนะนำในการทำ ${data.text} ทีละขั้นตอนแบบละเอียด หรือ เป็นหัวข้อย่อย เพื่อง่ายต่อการทำตาม และ สิ่งที่ต้องไปซื้อ ให้คำตอบเป็น json format {title: "", steps: [], ingredients, conclusion: ""} เพื่อนำไปใช้งานต่อได้ง่าย`
-      promptEn = `Please help to provide the instructions how to cook ${data.text} as a step-by-step guide or in bullet points for easy follow and which ingredient I have to buy and pls answer with json format {title: "", steps: [], ingredients, conclusion: ""} for easy to use it further:\n\n${data.text}`
+      promptTh = `โปรดช่วยให้ คำแนะนำในการทำ ${data.text} ทีละขั้นตอนแบบละเอียด หรือ เป็นหัวข้อย่อย เพื่อง่ายต่อการทำตาม และ สิ่งที่ต้องไปซื้อ ให้คำตอบเป็น json format {title: "", steps: [], ingredients, conclusion: ""} เพื่อนำไปใช้งานต่อได้ง่าย (ไม่เกิน 4000 คำ)`
+      promptEn = `Please help to provide the instructions how to cook ${data.text} as a step-by-step guide or in bullet points for easy follow and which ingredient I have to buy and pls answer with json format {title: "", steps: [], ingredients, conclusion: ""} for easy to use it further (not more than 4,000 words):\n\n${data.text}`
     }
 
     try {
