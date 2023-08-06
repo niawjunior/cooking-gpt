@@ -134,7 +134,7 @@ export default function Home() {
 
   return (
     <div className="bg-cover  bg-center bg-robot2">
-      <div className="backdrop-blur-md backdrop-brightness-50 flex flex-col justify-start items-center py-10 min-h-screen">
+      <div className="backdrop-blur-sm backdrop-brightness-50 flex flex-col justify-start items-center py-10 min-h-screen">
         {/* <div>
           <Image
             src={"/robot.png"}
@@ -218,7 +218,7 @@ export default function Home() {
               </>
             )}
             {summarizeDetail && !summarizeLoading && (
-              <>
+              <div className="backdrop-brightness-30 bg-slate-500/30 rounded-md px-10 py-4">
                 <div className="text-white text-2xl font-bold flex mb-4">
                   Summarize
                 </div>
@@ -251,11 +251,11 @@ export default function Home() {
                     </ul>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
           {youtubeLists.length > 0 && (
-            <div className="w-1/2">
+            <div className="w-1/2 backdrop-brightness-30 bg-slate-500/30 rounded-md px-4 py-4">
               <div className="text-white text-2xl font-bold flex">
                 Related Videos
               </div>
