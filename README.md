@@ -2,11 +2,9 @@
 
 ![alt text](demo-1.png)
 ![alt text](demo-2.png)
-
+![alt text](demo-3.png)
 
 https://github.com/niawjunior/cooking-gpt/assets/17493195/853aab4f-7144-4115-9346-66468344dbb2
-
-
 
 Key Features:
 
