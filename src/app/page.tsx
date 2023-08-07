@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input"
 import { useCallback, useEffect, useState } from "react"
 import { ReloadIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons"
 import { Skeleton } from "@/components/ui/skeleton"
-import axios from "axios"
+import { TypeAnimation } from "react-type-animation"
+
 import {
   Select,
   SelectContent,
@@ -14,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import Image from "next/image"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Flow from "@/components/Flow"
 
 function extractYouTubeVideoId(url: string) {
   const regex =
@@ -35,7 +37,8 @@ function isValidYouTubeUrl(url: string) {
 export default function Home() {
   const [url, setUrl] = useState("")
   const [detail, setDetail] = useState<any>(null)
-  const [language, setLanguage] = useState<any>("th")
+  const [language, setLanguage] = useState<string>("th")
+  const [mode, setMode] = useState<"search" | "flow">("search")
   const [isYoutube, setIsYoutube] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [youtubeLists, setYoutubeLists] = useState<string[]>([])
@@ -132,6 +135,9 @@ export default function Home() {
     setLanguage(e)
   }
 
+  const handleMode = (e: string) => {
+    console.log(e)
+  }
   return (
     <div className="bg-cover  bg-center bg-robot2">
       <div className="backdrop-blur-sm backdrop-brightness-50 flex flex-col justify-start items-center py-10 min-h-screen">
@@ -144,138 +150,156 @@ export default function Home() {
             className="rounded-full"
           />
         </div> */}
-        <div className="font-bold text-4xl text-white mb-6 shadow-lg ">
-          Cooking.GPT
-        </div>
+        <div className="font-bold text-4xl text-white mb-6">Cooking.GPT</div>
 
-        <form
-          onSubmit={(e) => handleSubmit(e)}
-          className="w-1/2 flex justify-center"
-        >
-          <div className="flex min-w-full max-w-sm items-center space-x-2">
-            <Input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              type="text"
-              placeholder="Please search with a YouTube link or a cooking menu."
-            />
-            <Select
-              onValueChange={(e) => handleOnChange(e)}
-              defaultValue={language}
+        <Tabs defaultValue={mode} className="w-full">
+          <TabsList className="grid w-1/3 grid-cols-2 mx-auto">
+            <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="flow">Flow</TabsTrigger>
+          </TabsList>
+          <TabsContent
+            value="search"
+            className="mx-auto min-w-full container justify-center"
+          >
+            <form
+              onSubmit={(e) => handleSubmit(e)}
+              className="w-1/2 flex justify-center mt-10 mx-auto"
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="เลือกภาษา" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="th">Thai</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Button
-              disabled={loading}
-              className="bg-blue-500 w-30 hover:bg-blue-700"
-              type="submit"
-            >
-              Search
-              {loading && <ReloadIcon className="ml-2 h-4 w-4 animate-spin" />}
-              {!loading && <MagnifyingGlassIcon className="ml-2 h-4 w-4" />}
-            </Button>
-          </div>
-        </form>
-        <div className="container flex justify-around mt-6 gap-4">
-          {isYoutube && (
-            <div className="w-1/2">
-              {detail && (
-                <>
-                  <div className="text-white font-bold">
-                    Title: {detail?.name}
+              <div className="flex min-w-full max-w-sm items-center space-x-2">
+                <Input
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  type="text"
+                  placeholder="Please search with a YouTube link or a cooking menu."
+                />
+                <Select
+                  onValueChange={(e) => handleOnChange(e)}
+                  defaultValue={language}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="เลือกภาษา" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="th">Thai</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Button
+                  disabled={loading}
+                  className="bg-blue-500 w-30 hover:bg-blue-700"
+                  type="submit"
+                >
+                  Search
+                  {loading && (
+                    <ReloadIcon className="ml-2 h-4 w-4 animate-spin" />
+                  )}
+                  {!loading && <MagnifyingGlassIcon className="ml-2 h-4 w-4" />}
+                </Button>
+              </div>
+            </form>
+
+            <div className="flex justify-around mt-6 gap-4 ">
+              {isYoutube && (
+                <div className="w-1/2">
+                  {detail && (
+                    <>
+                      <div className="text-white font-bold">
+                        Title: {detail?.name}
+                      </div>
+                      <iframe
+                        className="mt-4"
+                        width="600"
+                        height="400"
+                        src={`https://www.youtube.com/embed/${detail?.id}`}
+                        title={detail?.name}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      ></iframe>
+                    </>
+                  )}
+                </div>
+              )}
+              <div className="w-1/2">
+                {summarizeLoading && (
+                  <>
+                    <div className="text-white">Loading...</div>
+                    <div className="flex items-center space-x-4 mt-4">
+                      <div className="space-y-2 w-full">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    </div>
+                  </>
+                )}
+                {summarizeDetail && !summarizeLoading && (
+                  <div className="backdrop-brightness-30 bg-slate-500/30 rounded-md px-10 py-4">
+                    <div className="text-white text-2xl font-bold flex mb-4">
+                      Summarize
+                    </div>
+                    <div className="flex gap-12">
+                      <div className="text-white w-full">
+                        <div className="text-white font-bold text-lg">
+                          Menu: {summarizeDetail?.title}
+                        </div>
+
+                        <ul className="list-disc break-words mt-4">
+                          {summarizeDetail?.steps?.map(
+                            (item: string, index: number) => (
+                              <li key={index}>{item}</li>
+                            )
+                          )}
+                        </ul>
+                        <div>{summarizeDetail?.conclusion}</div>
+                      </div>
+
+                      <div className="text-white w-full">
+                        <div className="text-white font-bold flex text-lg">
+                          Ingredients
+                        </div>
+                        <ul className="list-disc break-words mt-4 text-white">
+                          {summarizeDetail?.ingredients?.map(
+                            (item: string, index: number) => (
+                              <li key={index}>{item}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    </div>
                   </div>
-                  <iframe
-                    className="mt-4"
-                    width="600"
-                    height="400"
-                    src={`https://www.youtube.com/embed/${detail?.id}`}
-                    title={detail?.name}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  ></iframe>
-                </>
+                )}
+              </div>
+              {youtubeLists.length > 0 && (
+                <div className="w-1/2 backdrop-brightness-30 bg-slate-500/30 rounded-md px-4 py-4">
+                  <div className="text-white text-2xl font-bold flex">
+                    Related Videos
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {youtubeLists.map((item, index) => (
+                      <iframe
+                        key={index}
+                        className="mt-4"
+                        width="auto"
+                        height="auto"
+                        src={`https://www.youtube.com/embed/${item}`}
+                        title={item}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      ></iframe>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          )}
-          <div className="w-1/2">
-            {summarizeLoading && (
-              <>
-                <div className="text-white">Loading...</div>
-                <div className="flex items-center space-x-4 mt-4">
-                  <div className="space-y-2 w-full">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                </div>
-              </>
-            )}
-            {summarizeDetail && !summarizeLoading && (
-              <div className="backdrop-brightness-30 bg-slate-500/30 rounded-md px-10 py-4">
-                <div className="text-white text-2xl font-bold flex mb-4">
-                  Summarize
-                </div>
-                <div className="flex gap-12">
-                  <div className="text-white w-full">
-                    <div className="text-white font-bold text-lg">
-                      Menu: {summarizeDetail?.title}
-                    </div>
-
-                    <ul className="list-disc break-words mt-4">
-                      {summarizeDetail?.steps.map(
-                        (item: string, index: number) => (
-                          <li key={index}>{item}</li>
-                        )
-                      )}
-                    </ul>
-                    <div>{summarizeDetail?.conclusion}</div>
-                  </div>
-
-                  <div className="text-white w-full">
-                    <div className="text-white font-bold flex text-lg">
-                      Ingredients
-                    </div>
-                    <ul className="list-disc break-words mt-4 text-white">
-                      {summarizeDetail?.ingredients.map(
-                        (item: string, index: number) => (
-                          <li key={index}>{item}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          {youtubeLists.length > 0 && (
-            <div className="w-1/2 backdrop-brightness-30 bg-slate-500/30 rounded-md px-4 py-4">
-              <div className="text-white text-2xl font-bold flex">
-                Related Videos
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                {youtubeLists.map((item, index) => (
-                  <iframe
-                    key={index}
-                    className="mt-4"
-                    width="auto"
-                    height="auto"
-                    src={`https://www.youtube.com/embed/${item}`}
-                    title={item}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  ></iframe>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </TabsContent>
+          <TabsContent
+            value="flow"
+            className="mx-auto min-w-full container justify-center"
+          >
+            <Flow />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

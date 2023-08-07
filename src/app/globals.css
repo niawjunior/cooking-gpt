@@ -90,3 +90,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.react-flow__node-custom {
+  padding: 10px;
+  background-color: #556677;
+  color: white;
+}
+
+.react-flow__node-input {
+  width: unset !important;
+  font-size: unset !important;
+}
+/* 
+.react-flow__panel .react-flow__attribution .bottom .right {
+
+} */

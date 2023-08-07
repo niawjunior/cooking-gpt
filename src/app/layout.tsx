@@ -1,6 +1,7 @@
 import "./globals.css"
 import type { Metadata } from "next"
 import { Kanit } from "next/font/google"
+import { Providers } from "@/redux/provider"
 
 const inter = Kanit({ subsets: ["thai"], weight: "400" })
 
@@ -17,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning={true} className={inter.className}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
