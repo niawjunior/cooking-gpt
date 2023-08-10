@@ -24,6 +24,7 @@ import { Play } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import Panel from "./Panel"
 import ContextMenu from "./ContextMenu"
+import { addNode } from "@/redux/features/flowSlice"
 
 const initialEdges: Edge[] = [
   { id: "e1-2", source: "1", target: "2", animated: true },
@@ -46,11 +47,13 @@ const BasicFlow = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const ref = useRef<any>(null)
   const flowNodes = useAppSelector((state) => state.flowReducer.nodes)
+  const nodesMenu = useAppSelector((state) => state.flowReducer.lists)
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
+  console.log(flowNodes)
+  const dispatch = useAppDispatch()
 
   const [menu, setMenu] = useState<any>(null)
 
-  const [isOpenContext, setIsOpenContext] = useState(false)
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((els) => addEdge(params, els)),
     [setEdges]
@@ -67,7 +70,6 @@ const BasicFlow = () => {
   // })
 
   // const onContextMenu = (e: any) => {
-  //   console.log(e.clientX, e.clientY)
   //   e.preventDefault()
   //   setPosition({ x: e.clientX, y: e.clientY })
   //   setIsOpenContext(true)
@@ -79,7 +81,6 @@ const BasicFlow = () => {
       event.preventDefault()
 
       const pane = ref.current.getBoundingClientRect()
-      console.log(event.clientY)
       setMenu({
         id: node.id,
         top: event.clientY < pane.height - 200 && event.clientY - 250,
@@ -91,9 +92,7 @@ const BasicFlow = () => {
     },
     [setMenu]
   )
-  const clickNode = () => {
-    console.log("hello clicking")
-  }
+
   useEffect(() => {
     setNodes(flowNodes)
   }, [flowNodes, setNodes])
@@ -101,14 +100,21 @@ const BasicFlow = () => {
 
   const onPaneClick = useCallback(() => setMenu(null), [setMenu])
 
+  const handleOnClickMenu = (type: string) => {
+    const getMenu = nodesMenu.find((item) => item.type === type)
+    if (getMenu) {
+      dispatch(addNode({ node: getMenu }))
+    }
+    setMenu(null)
+  }
   return (
-    <>
-      {/* <Button className="rounded-full w-12 h-12 bg-green-500 hover:bg-green-600">
+    <div className="flex">
+      <Button className="rounded-full w-12 h-12 bg-green-500 hover:bg-green-600">
         <Play />
-      </Button> */}
+      </Button>
       <ReactFlow
         ref={ref}
-        className="w-full min-h-[100vh]"
+        className="w-full min-h-[70vh]"
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -125,10 +131,17 @@ const BasicFlow = () => {
       >
         <Background color="#aaa" gap={16} />
         <MiniMap style={minimapStyle} zoomable pannable />
-        {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+        {menu && (
+          <ContextMenu
+            onClick={onPaneClick}
+            {...menu}
+            nodes={nodesMenu}
+            onMenuClick={handleOnClickMenu}
+          />
+        )}
       </ReactFlow>
-      {/* <Panel /> */}
-    </>
+      <Panel />
+    </div>
   )
 }
 

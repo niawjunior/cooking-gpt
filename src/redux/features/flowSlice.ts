@@ -1,4 +1,4 @@
-import { IFlow } from "@/interfaces/IFlow"
+import { IFlow, ListsNode } from "@/interfaces/IFlow"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
 const initialState: IFlow = {
@@ -9,19 +9,37 @@ const initialState: IFlow = {
       data: { label: "Source", value: "text" },
       position: { x: 200, y: 20 },
     },
+    // {
+    //   id: "2",
+    //   type: "keywords",
+    //   data: { label: "Input", value: "" },
+    //   position: { x: 100, y: 180 },
+    // },
+    // {
+    //   id: "3",
+    //   type: "model",
+    //   data: { label: "Model", value: "gpt-3.5-turbo" },
+    //   position: { x: 350, y: 280 },
+    // },
+  ],
+  lists: [
     {
-      id: "2",
+      type: "source",
+      data: { label: "Source", value: "text" },
+      position: { x: 200, y: 20 },
+    },
+    {
       type: "keywords",
       data: { label: "Input", value: "" },
       position: { x: 100, y: 180 },
     },
     {
-      id: "3",
       type: "model",
       data: { label: "Model", value: "gpt-3.5-turbo" },
       position: { x: 350, y: 280 },
     },
   ],
+  nodeIdCounter: 1,
 }
 
 export const flow = createSlice({
@@ -42,6 +60,14 @@ export const flow = createSlice({
         node.data.value = data
       }
     },
+    addNode: (state, action: PayloadAction<{ node: ListsNode }>) => {
+      state.nodeIdCounter += 1
+      const newNode = {
+        ...action.payload.node,
+        id: state.nodeIdCounter as unknown as string,
+      }
+      state.nodes.push(newNode)
+    },
     deleteNode: (state, action: PayloadAction<string>) => {
       const nodeId = action.payload
       state.nodes = state.nodes.filter((node) => node.id !== nodeId)
@@ -49,5 +75,6 @@ export const flow = createSlice({
   },
 })
 
-export const { setFlow, updateNodeData, deleteNode, reset } = flow.actions
+export const { setFlow, updateNodeData, deleteNode, addNode, reset } =
+  flow.actions
 export default flow.reducer
